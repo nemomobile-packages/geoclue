@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<node name="/">
+	<interface name="org.freedesktop.Geoclue.Satellite">
+		<method name="GetSatellite">
+			<arg type="i" name="timestamp" direction="out" />
+			<arg type="i" name="satellite_used" direction="out" />
+			<arg type="i" name="satellite_visible" direction="out" />
+			<arg type="ai" name="used_prn" direction="out" />
+			<arg type="a(iiii)" name="sat_info" direction="out" />
+		</method>
+
+		<method name="GetLastSatellite">
+			<arg type="i" name="timestamp" direction="out" />
+			<arg type="i" name="satellite_used" direction="out" />
+			<arg type="i" name="satellite_visible" direction="out" />
+			<arg type="ai" name="used_prn" direction="out" />
+			<arg type="a(iiii)" name="sat_info" direction="out" />
+		</method>
+
+		<signal name="SatelliteChanged">
+			<arg type="i" name="timestamp" />
+			<arg type="i" name="satellite_used" />
+			<arg type="i" name="satellite_visible" />
+			<arg type="ai" name="used_prn" />
+			<arg type="a(iiii)" name="sat_info" />
+		</signal>
+	</interface>
+</node>

@@ -185,4 +185,13 @@ make DESTDIR=%{buildroot} install
 rm -f %{buildroot}/%{_libdir}/*.la
 
 %post -p /sbin/ldconfig
-%postun -p /sbin/ldconfig
+
+%postun
+/sbin/ldconfig
+if [ $1 -eq 0 ]; then
+    /usr/bin/glib-compile-schemas %{_datadir}/glib-2.0/schemas &>/dev/null || :
+fi
+
+%posttrans
+/usr/bin/glib-compile-schemas %{_datadir}/glib-2.0/schemas &>/dev/null || :
+
