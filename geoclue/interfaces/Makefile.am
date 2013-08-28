@@ -9,7 +9,8 @@ noinst_DATA = \
 	gc-iface-master.xml \
 	gc-iface-master-client.xml \
 	gc-iface-reverse-geocode.xml \
-	gc-iface-velocity.xml
+	gc-iface-velocity.xml \
+	gc-iface-satellite.xml
 
 BUILT_SOURCES = $(noinst_DATA)
 CLEANFILES = $(BUILT_SOURCES)
@@ -22,4 +23,5 @@ EXTRA_DIST = \
 	gc-iface-master-full.xml \
 	gc-iface-master-client-full.xml \
 	gc-iface-reverse-geocode-full.xml \
-	gc-iface-velocity-full.xml
+	gc-iface-velocity-full.xml \
+	gc-iface-satellite-full.xml
