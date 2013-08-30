@@ -351,28 +351,36 @@ gc_master_client_get_best_provider (GcMasterClient    *client,
                                     GList            **provider_list,
                                     GcInterfaceFlags   iface)
 {
-	GList *l = *provider_list;
+	/* provider_list could get resorted when providers are started. Use a copy of the
+	 * list when starting and subscribing to providers */
+	GList *providers = g_list_copy(*provider_list);
+
+	GList *l = providers;
 	/* TODO: should maybe choose a acquiring provider if better ones are are not available */
 	
 	g_debug ("client: choosing best provider");
 	
+	/* Start and subscribe to all matching providers. */
 	while (l) {
 		GcMasterProvider *provider = l->data;
 		
 		g_debug ("        ...trying provider %s", gc_master_provider_get_name (provider));
 		if (gc_master_provider_subscribe (provider, client, iface)) {
-			/* provider was started, so accuracy may have changed 
-			   (which re-sorts provider lists), restart provider selection */
-			/* TODO re-think this: restarting provider selection leads to potentially
-			   never-ending looping */
-			g_debug ("        ...started %s (status %d), re-starting provider selection",
+			g_debug ("        ...started %s (status %d)",
 			         gc_master_provider_get_name (provider),
 			         gc_master_provider_get_status (provider));
-			l = *provider_list;
-			continue;
 		}
-		/* provider did not need to be started */
-		
+
+		l = l->next;
+	}
+
+	g_list_free(providers);
+
+	/* Use the potentially resorted provider_list to select the best provider */
+	l = *provider_list;
+	while (l) {
+		GcMasterProvider *provider = l->data;
+
 		/* TODO: currently returning even providers that are worse than priv->min_accuracy,
 		 * if nothing else is available */
 		if (gc_master_provider_get_status (provider) == GEOCLUE_STATUS_AVAILABLE) {

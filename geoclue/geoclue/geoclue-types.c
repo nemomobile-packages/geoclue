@@ -26,6 +26,7 @@
 #include <geoclue/geoclue-types.h>
 #include <geoclue/geoclue-accuracy.h>
 #include <geoclue/geoclue-error.h>
+#include <geoclue/geoclue-satellite-info.h>
 
 static gboolean initted = FALSE;
 
@@ -67,6 +68,15 @@ geoclue_types_init (void)
 	                                   G_TYPE_STRING,
 	                                   G_TYPE_STRING,
 	                                   G_TYPE_INVALID);
+
+	dbus_g_object_register_marshaller (geoclue_marshal_VOID__INT_INT_INT_POINTER_POINTER,
+					   G_TYPE_NONE,
+					   G_TYPE_INT,
+					   G_TYPE_INT,
+					   G_TYPE_INT,
+					   DBUS_TYPE_G_INT_ARRAY,
+					   GEOCLUE_SATELLITE_INFO_ARRAY,
+					   G_TYPE_INVALID);
 
 	dbus_g_error_domain_register (GEOCLUE_ERROR,
 				      GEOCLUE_ERROR_DBUS_INTERFACE,

@@ -1294,9 +1294,9 @@ gc_master_provider_compare (GcMasterProvider *a,
 	min_level = iface_min_accuracy->accuracy_level;
 	
 	/* sort by resource requirements and accuracy, but only if both
-	 * providers meet the minimum accuracy requirement  */
-	if ((level_b >= min_level) &&
-	    (level_a >= min_level)) {
+	 * providers have the same accuracy and it meets the minimum
+	 * accuracy requirement */
+	if ((level_a == level_b) && (level_b >= min_level)) {
 		diff = priv_a->required_resources - priv_b->required_resources;
 		if (diff != 0 ) {
 			return diff;

@@ -16,7 +16,9 @@ nodist_libgeoclue_la_SOURCES = \
 	gc-iface-reverse-geocode-bindings.h	\
 	gc-iface-reverse-geocode-glue.h	\
 	gc-iface-velocity-bindings.h	\
-	gc-iface-velocity-glue.h
+	gc-iface-velocity-glue.h \
+	gc-iface-satellite-bindings.h	\
+	gc-iface-satellite-glue.h
 
 BUILT_SOURCES = \
 	$(nodist_libgeoclue_la_SOURCES)	\
@@ -36,6 +38,7 @@ libgeoclue_la_SOURCES = 	\
 	geoclue-reverse-geocode.c	\
 	geoclue-types.c		\
 	geoclue-velocity.c	\
+	geoclue-satellite.c	\
 	gc-provider.c		\
 	gc-web-service.c	\
 	gc-iface-address.c	\
@@ -44,6 +47,7 @@ libgeoclue_la_SOURCES = 	\
 	gc-iface-position.c	\
 	gc-iface-reverse-geocode.c	\
 	gc-iface-velocity.c	\
+	gc-iface-satellite.c	\
 	geoclue-enum-types.c
 
 libgeoclue_la_LIBADD =	\
@@ -61,6 +65,7 @@ geoclue_headers =		\
 	gc-iface-position.h	\
 	gc-iface-reverse-geocode.h	\
 	gc-iface-velocity.h	\
+	gc-iface-satellite.h	\
 	gc-provider.h		\
 	gc-web-service.h	\
 	geoclue-accuracy.h	\
@@ -75,6 +80,8 @@ geoclue_headers =		\
 	geoclue-reverse-geocode.h	\
 	geoclue-types.h		\
 	geoclue-velocity.h	\
+	geoclue-satellite.h	\
+	geoclue-satellite-info.h	\
 	geoclue-enum-types.h
 
 libgeoclue_includedir = $(includedir)/geoclue
@@ -90,7 +97,8 @@ CLEANFILES = $(BUILT_SOURCES) 	\
 	stamp-gc-iface-geocode-glue.h	\
 	stamp-gc-iface-position-glue.h	\
 	stamp-gc-iface-reverse-geocode-glue.h	\
-	stamp-gc-iface-velocity-glue.h
+	stamp-gc-iface-velocity-glue.h \
+	stamp-gc-iface-satellite-glue.h
 
 DISTCLEANFILES = \
 	$(nodist_libgeoclue_la_SOURCES)	\
@@ -137,6 +145,12 @@ stamp-gc-iface-reverse-geocode-glue.h: ../interfaces/gc-iface-reverse-geocode.xm
 
 stamp-gc-iface-velocity-glue.h: ../interfaces/gc-iface-velocity.xml
 	$(AM_V_GEN) $(DBUS_BINDING_TOOL) --prefix=gc_iface_velocity --mode=glib-server $< > xgen-$(@F) \
+	&& (cmp -s xgen-$(@F) $(@F:stamp-%=%) || cp xgen-$(@F) $(@F:stamp-%=%)) \
+	&& rm -f xgen-$(@F) \
+	&& echo timestamp > $(@F)
+
+stamp-gc-iface-satellite-glue.h: ../interfaces/gc-iface-satellite.xml
+	$(AM_V_GEN) $(DBUS_BINDING_TOOL) --prefix=gc_iface_satellite --mode=glib-server $< > xgen-$(@F) \
 	&& (cmp -s xgen-$(@F) $(@F:stamp-%=%) || cp xgen-$(@F) $(@F:stamp-%=%)) \
 	&& rm -f xgen-$(@F) \
 	&& echo timestamp > $(@F)
