@@ -33,6 +33,7 @@
 
 
 #include <config.h>
+#include <dbus/dbus-glib-lowlevel.h>
 
 #include <geoclue/geoclue-error.h>
 #include <geoclue/geoclue-marshal.h>
@@ -80,6 +81,7 @@ typedef struct _GcMasterClientPrivate {
 	gboolean address_provider_choice_in_progress;
 	time_t last_address_changed;
 
+	GHashTable *connections;
 } GcMasterClientPrivate;
 
 #define GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), GC_TYPE_MASTER_CLIENT, GcMasterClientPrivate))
@@ -391,8 +393,9 @@ gc_master_client_get_best_provider (GcMasterClient    *client,
 		l = l->next;
 	}
 	
-	/* no provider found */
-	gc_master_client_unsubscribe_providers (client, *provider_list, iface);
+    /* No available provider found. Keep all matching providers subscribed until one becomes
+     * available. This is required to keep the master provider from deinitializing the position and
+     * address providers. */
 	return NULL;
 }
 
@@ -800,11 +803,15 @@ gc_iface_master_client_get_position_provider (GcMasterClient  *client,
 }
 
 static void
-finalize (GObject *object)
+dispose (GObject *object)
 {
 	GcMasterClient *client = GC_MASTER_CLIENT (object);
 	GcMasterClientPrivate *priv = GET_PRIVATE (object);
-	
+
+	g_hash_table_destroy (priv->connections);
+	priv->position_provider = NULL;
+	priv->address_provider = NULL;
+
 	/* do not free contents of the lists, Master takes care of them */
 	if (priv->position_providers) {
 		gc_master_client_unsubscribe_providers (client, priv->position_providers, GC_IFACE_ALL);
@@ -816,7 +823,13 @@ finalize (GObject *object)
 		g_list_free (priv->address_providers);
 		priv->address_providers = NULL;
 	}
-	
+
+	((GObjectClass *) gc_master_client_parent_class)->dispose (object);
+}
+
+static void
+finalize (GObject *object)
+{
 	((GObjectClass *) gc_master_client_parent_class)->finalize (object);
 }
 
@@ -826,6 +839,7 @@ gc_master_client_class_init (GcMasterClientClass *klass)
 	GObjectClass *o_class = (GObjectClass *) klass;
 	
 	o_class->finalize = finalize;
+	o_class->dispose = dispose;
 	
 	g_type_class_add_private (klass, sizeof (GcMasterClientPrivate));
 	
@@ -867,6 +881,8 @@ gc_master_client_init (GcMasterClient *client)
 	priv->address_started = FALSE;
 	priv->address_provider = NULL;
 	priv->address_providers = NULL;
+
+	priv->connections = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
 }
 
 static gboolean
@@ -967,7 +983,21 @@ static void
 add_reference (GcIfaceGeoclue *geoclue,
                DBusGMethodInvocation *context)
 {
-	/* TODO implement if needed */
+	GcMasterClientPrivate *priv = GET_PRIVATE (geoclue);
+	char *sender;
+	int *pcount;
+
+	/* Update the hash of open connections */
+	sender = dbus_g_method_get_sender (context);
+	pcount = g_hash_table_lookup (priv->connections, sender);
+
+	if (!pcount) {
+		pcount = g_malloc0 (sizeof (int));
+		g_hash_table_insert (priv->connections, sender, pcount);
+	}
+
+	(*pcount)++;
+
 	dbus_g_method_return (context);
 }
 
@@ -975,7 +1005,27 @@ static void
 remove_reference (GcIfaceGeoclue *geoclue,
                   DBusGMethodInvocation *context)
 {
-	/* TODO implement if needed */
+	GcMasterClient *client = GC_MASTER_CLIENT (geoclue);
+	GcMasterClientPrivate *priv = GET_PRIVATE (geoclue);
+	char *sender;
+	int *pcount;
+
+	sender = dbus_g_method_get_sender (context);
+	pcount = g_hash_table_lookup (priv->connections, sender);
+
+	if (pcount) {
+		(*pcount)--;
+		if (*pcount == 0) {
+			g_hash_table_remove (priv->connections, sender);
+		}
+
+		if (g_hash_table_size (priv->connections) == 0) {
+			g_object_unref (client);
+		}
+	}
+
+	g_free (sender);
+
 	dbus_g_method_return (context);
 }
 
