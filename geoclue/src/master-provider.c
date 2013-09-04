@@ -1064,13 +1064,12 @@ gc_master_provider_unsubscribe (GcMasterProvider *provider,
 		priv->address_clients = g_list_remove (priv->address_clients, client);
 	}
 	
-	if (!priv->position_clients &&
-	    !priv->address_clients) {
-		/* no one is using this provider, shutdown... */
+	if ((!priv->position_clients && !priv->address_clients) && (priv->position || priv->address)) {
+		/* no one is using this provider and it is initialized, shutdown... */
 		/* not clearing cached accuracies on purpose */
 		g_debug ("%s without clients", priv->name);
 		
-		/* gc_master_provider_deinitialize (provider); */
+		gc_master_provider_deinitialize (provider);
 	}
 }
 
