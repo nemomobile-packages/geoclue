@@ -54,6 +54,7 @@ static guint32 signals[LAST_SIGNAL] = {0, };
 G_DEFINE_TYPE (GcMaster, gc_master, G_TYPE_OBJECT);
 
 static GList *providers = NULL;
+static GList *clients = NULL;
 
 static gboolean gc_iface_master_create (GcMaster    *master,
 					const char **object_path,
@@ -62,6 +63,23 @@ static gboolean gc_iface_master_create (GcMaster    *master,
 #include "gc-iface-master-glue.h"
 
 #define GEOCLUE_MASTER_PATH "/org/freedesktop/Geoclue/Master/client"
+static void
+on_client_finalized (gpointer data,
+					 GObject *dead_object)
+{
+	GcMaster *master = GC_MASTER (data);
+	GcMasterClient *client = GC_MASTER_CLIENT (dead_object);
+
+	clients = g_list_remove (clients, client);
+
+    GList *l = providers;
+    while (l) {
+        GcMasterProvider *p = l->data;
+        int handlers = g_signal_handlers_disconnect_by_data(G_OBJECT(p), client);
+        l = l->next;
+    }
+}
+
 static gboolean
 gc_iface_master_create (GcMaster    *master,
 			const char **object_path,
@@ -76,6 +94,10 @@ gc_iface_master_create (GcMaster    *master,
 	dbus_g_connection_register_g_object (master->connection, path,
 					     G_OBJECT (client));
 	
+	g_object_weak_ref (G_OBJECT(client), (GWeakNotify)on_client_finalized, master);
+
+	clients = g_list_append (clients, client);
+
 	if (object_path) {
 		*object_path = path;
 	}
