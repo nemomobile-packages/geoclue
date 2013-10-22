@@ -56,6 +56,7 @@ GList *gc_master_get_providers (GcInterfaceFlags      iface_type,
 				gboolean              can_update,
 				GeoclueResourceFlags  allowed,
 				GError              **error);
+void gc_master_close_client_for(const char *service_name);
 
 #endif
 	

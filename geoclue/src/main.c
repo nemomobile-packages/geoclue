@@ -26,6 +26,7 @@
 #include <config.h>
 #endif
 
+#include <string.h>
 #include <glib.h>
 #include <gio/gio.h>
 
@@ -182,6 +183,13 @@ geoclue_get_main_options (void)
         return options;
 }
 
+static void name_owner_changed(DBusGProxy *proxy, const char *name, const char *prevOwner,
+                               const char *newOwner, GcMaster *master)
+{
+    if (strcmp(newOwner, "") == 0)
+        gc_master_close_client_for(name);
+}
+
 int
 main (int    argc,
       char **argv)
@@ -225,6 +233,11 @@ main (int    argc,
 	dbus_g_connection_register_g_object (conn, 
 					     "/org/freedesktop/Geoclue/Master", 
 					     G_OBJECT (master));
+
+    dbus_g_proxy_add_signal(proxy, "NameOwnerChanged",
+                            G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+    dbus_g_proxy_connect_signal(proxy, "NameOwnerChanged", G_CALLBACK(name_owner_changed),
+                                master, NULL);
 
 	g_main_loop_run (mainloop);
 	return 0;

@@ -44,4 +44,6 @@ typedef struct {
 
 GType gc_master_client_get_type (void);
 
+void gc_master_client_remove_reference_for(GcMasterClient *client, const char *service_name);
+
 #endif

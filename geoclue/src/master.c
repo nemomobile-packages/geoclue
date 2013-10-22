@@ -231,3 +231,14 @@ gc_master_get_providers (GcInterfaceFlags      iface_type,
 	
 	return p;
 }
+
+
+void gc_master_close_client_for(const char *service_name)
+{
+    GList *l = clients;
+    while (l) {
+       GcMasterClient *client = l->data;
+       gc_master_client_remove_reference_for(client, service_name);
+       l = l->next;
+    }
+}
