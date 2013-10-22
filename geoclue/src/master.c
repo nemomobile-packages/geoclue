@@ -75,7 +75,7 @@ on_client_finalized (gpointer data,
     GList *l = providers;
     while (l) {
         GcMasterProvider *p = l->data;
-        int handlers = g_signal_handlers_disconnect_by_data(G_OBJECT(p), client);
+        g_signal_handlers_disconnect_by_data(G_OBJECT(p), client);
         l = l->next;
     }
 }
