@@ -75,7 +75,7 @@ on_client_finalized (gpointer data,
     GList *l = providers;
     while (l) {
         GcMasterProvider *p = l->data;
-        int handlers = g_signal_handlers_disconnect_by_data(G_OBJECT(p), client);
+        g_signal_handlers_disconnect_by_data(G_OBJECT(p), client);
         l = l->next;
     }
 }
@@ -230,4 +230,15 @@ gc_master_get_providers (GcInterfaceFlags      iface_type,
 	}
 	
 	return p;
+}
+
+
+void gc_master_close_client_for(const char *service_name)
+{
+    GList *l = clients;
+    while (l) {
+       GcMasterClient *client = l->data;
+       gc_master_client_remove_reference_for(client, service_name);
+       l = l->next;
+    }
 }

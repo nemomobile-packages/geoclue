@@ -1050,3 +1050,15 @@ gc_master_client_address_init (GcIfaceAddressClass *iface)
 {
 	iface->get_address = get_address;
 }
+
+void gc_master_client_remove_reference_for(GcMasterClient *client, const char *service_name)
+{
+    GcMasterClientPrivate *priv = GET_PRIVATE(client);
+
+    int *pcount = g_hash_table_lookup(priv->connections, service_name);
+    if (pcount) {
+        g_hash_table_remove(priv->connections, service_name);
+        if (g_hash_table_size(priv->connections) == 0)
+            g_object_unref(client);
+    }
+}
