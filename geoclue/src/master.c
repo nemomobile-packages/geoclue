@@ -238,7 +238,11 @@ void gc_master_close_client_for(const char *service_name)
     GList *l = clients;
     while (l) {
        GcMasterClient *client = l->data;
+
+       // Get the next entry in the list now because gc_master_client_remove_reference_for() may
+       // remove the current entry, causing the loop to break too early.
+       l = g_list_next(l);
+
        gc_master_client_remove_reference_for(client, service_name);
-       l = l->next;
     }
 }
