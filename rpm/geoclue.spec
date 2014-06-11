@@ -189,9 +189,9 @@ rm -f %{buildroot}/%{_libdir}/*.la
 %postun
 /sbin/ldconfig
 if [ $1 -eq 0 ]; then
-    /usr/bin/glib-compile-schemas %{_datadir}/glib-2.0/schemas &>/dev/null || :
+    /usr/bin/glib-compile-schemas %{_datadir}/glib-2.0/schemas >/dev/null 2>/dev/null || :
 fi
 
 %posttrans
-/usr/bin/glib-compile-schemas %{_datadir}/glib-2.0/schemas &>/dev/null || :
+/usr/bin/glib-compile-schemas %{_datadir}/glib-2.0/schemas >/dev/null 2>/dev/null || :
 
