@@ -111,12 +111,18 @@ typedef struct _GeoclueMasterClientAsyncData {
 static void
 finalize (GObject *object)
 {
+	GeoclueMasterClientPrivate *priv = GET_PRIVATE(object);
+	g_free(priv->object_path);
+
 	G_OBJECT_CLASS (geoclue_master_client_parent_class)->finalize (object);
 }
 
 static void
 dispose (GObject *object)
 {
+	GeoclueMasterClientPrivate *priv = GET_PRIVATE(object);
+	g_object_unref(priv->proxy);
+	priv->proxy = 0;
 
 	G_OBJECT_CLASS (geoclue_master_client_parent_class)->dispose (object);
 }
