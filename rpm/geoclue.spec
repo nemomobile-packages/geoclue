@@ -176,7 +176,7 @@ Group: System/Libraries
 
 %build
 autoreconf -vfi
-%configure --enable-static=no --enable-connman=yes
+%configure --enable-static=no --enable-connman=no
 make %{?_smp_mflags}
 
 
